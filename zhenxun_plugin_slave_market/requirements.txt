@@ -1,0 +1,3 @@
+ujson
+nonebot_plugin_htmlrender
+nonebot_plugin_imageutils
