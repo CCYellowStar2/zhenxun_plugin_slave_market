@@ -64,10 +64,10 @@ async def _(bot:Bot, event: GroupMessageEvent):
             '|名称|qq号|身价|主人|\n' \
             '| --- | --- | --- | --- |\n'
         for qq,p in ulist.items():
-            if user_ := await GroupInfoUser.get_or_none(user_qq=qq, group_id=group_id):
+            if user_ := await GroupInfoUser.get_or_none(user_id=qq, group_id=group_id):
                 user_name = user_.user_name
             if user_ := await BayUsers.get_or_none(group_id=group_id,auser_qq=qq):
-                if usern := await GroupInfoUser.get_or_none(user_qq=user_.muser_qq, group_id=group_id):
+                if usern := await GroupInfoUser.get_or_none(user_id=user_.muser_qq, group_id=group_id):
                     user_name1 = usern.user_name
                 umaster = user_name1
                 msg += f"|<img width='20%' src='http://q1.qlogo.cn/g?b=qq&nk={qq}&s=100'/>  {user_name}|{qq}|{p}|<img width='20%' src='http://q1.qlogo.cn/g?b=qq&nk={usern.user_qq}&s=100'/>  {umaster}|\n"
@@ -95,7 +95,7 @@ async def _(bot:Bot, event: GroupMessageEvent):
             '|名称|qq号|身价|\n' \
             '| --- | --- | --- |\n'
         for qq,p in ulist.items():
-            if user_ := await GroupInfoUser.get_or_none(user_qq=qq, group_id=group_id):
+            if user_ := await GroupInfoUser.get_or_none(user_id=qq, group_id=group_id):
                 user_name = user_.user_name
             msg += f"|<img width='20%' src='http://q1.qlogo.cn/g?b=qq&nk={qq}&s=100'/>  {user_name}|{qq}|{p}|\n"
 
@@ -115,14 +115,14 @@ async def _(bot:Bot, event: GroupMessageEvent, msgs: Message = CommandArg()):
     at = get_message_at(event.json())
     atqq = msgs.extract_plain_text().strip()
     try:
-        if user_ := await GroupInfoUser.get_or_none(user_qq=at[0], group_id=group_id):
+        if user_ := await GroupInfoUser.get_or_none(user_id=at[0], group_id=group_id):
             user_name = user_.user_name
             qq=at[0]
         else:
             await buyuser.finish("群里好像没有这个人捏~", at_sender=True)
     except:
         try:
-            if user_ := await GroupInfoUser.get_or_none(user_qq=atqq, group_id=group_id):
+            if user_ := await GroupInfoUser.get_or_none(user_id=atqq, group_id=group_id):
                 user_name = user_.user_name
                 qq=atqq
             else:
@@ -161,7 +161,7 @@ async def _(bot:Bot, event: GroupMessageEvent, msgs: Message = CommandArg()):
         if await BagUser.get_gold(user_id,group_id) < auser.body_price:
             await buyuser.finish(f"你买不起！需要{auser.body_price}金币", at_sender=True)
             return
-        if user_ := await GroupInfoUser.get_or_none(user_qq=user.muser_qq, group_id=group_id):
+        if user_ := await GroupInfoUser.get_or_none(user_id=user.muser_qq, group_id=group_id):
             user_name2 = user_.user_name
         m = await UsersInfo.add_user(user_id,group_id,qq)
         if not m:
@@ -228,7 +228,7 @@ async def _(bot:Bot, event: GroupMessageEvent):
         golds=0
         msgs="你派出了所有群友去打工\n"
         for qq,p in ulist.items():
-            if user_ := await GroupInfoUser.get_or_none(user_qq=qq, group_id=group_id):
+            if user_ := await GroupInfoUser.get_or_none(user_id=qq, group_id=group_id):
                 NICKNAME = f"【{user_.user_name}】"
             gold = random.randint(10, 40)
             gold=gold+ random.randint(p/10, p/5)
@@ -277,7 +277,7 @@ async def _(bot:Bot, event: GroupMessageEvent):
         await BagUser.add_gold(user_id,group_id,golds)
         u = await BagUser.get_gold(user_id,group_id)
         if len(msgs.splitlines())>80:
-            s=0
+            s=""
             for i in msgs.splitlines()[:80]:
                 s=s+i+"\n"
             msgs=s+"......\n"
@@ -306,7 +306,7 @@ async def auto_update_member_info():
         _group_user_list = await GroupInfoUser.filter(group_id=buy.group_id).all()
         _userids=[]
         for user_info in _group_user_list:
-            _userids.append(user_info.user_qq)
+            _userids.append(user_info.user_id)
         if not buy.auser_qq in _userids:
             await UsersInfo.remove_user(buy.auser_qq,buy.group_id)
         elif not buy.muser_qq in _userids:
@@ -324,7 +324,7 @@ async def update_member_info(bot:Bot, event: GroupMessageEvent):
         _userids=[]
         i=0
         for user_info in _group_user_list:
-            _userids.append(user_info.user_qq)
+            _userids.append(user_info.user_id)
         for buy in buylist:
             if not buy.auser_qq in _userids:
                 await UsersInfo.remove_user(buy.auser_qq,buy.group_id)
